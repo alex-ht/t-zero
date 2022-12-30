@@ -101,9 +101,9 @@ class DecoderModel(ModelBase):
                 config=config,
                 torch_dtype=kwargs.get("torch_dtype", None),
                 # Necessary for pipeline parallelism:
-                device_map="auto",
-                max_memory=get_gpus_max_memory("50GB"),
-                offload_folder="offload",
+                # device_map="auto",
+                low_cpu_mem_usage=False,
+                # max_memory=get_gpus_max_memory("30GB"),
             )
         else:
             logger.info("Training new model from scratch")

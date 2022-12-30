@@ -27,7 +27,8 @@ import json
 
 import datasets
 import torch
-from datasets import load_dataset, load_metric
+from torch.nn import *
+from datasets import load_dataset
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
@@ -38,6 +39,7 @@ from transformers import (
     AutoTokenizer,
     default_data_collator,
 )
+import evaluate
 from promptsource.templates import DatasetTemplates
 
 from t0.data_collator import DataCollatorForMultipleChoice
@@ -302,10 +304,10 @@ def run_template(template_name, prompts, model, tokenizer, raw_datasets, acceler
     eval_dataloader = DataLoader(eval_dataset, collate_fn=data_collator, batch_size=args.per_device_eval_batch_size)
 
     # Prepare everything with our `accelerator`.
-    eval_dataloader = accelerator.prepare(eval_dataloader)
+    model, eval_dataloader = accelerator.prepare(model, eval_dataloader)
 
     # Metrics
-    metric = load_metric(
+    metric = evaluate.load(
         "accuracy",
         process_id=accelerator.process_index,
         num_process=accelerator.num_processes,
@@ -323,13 +325,14 @@ def run_template(template_name, prompts, model, tokenizer, raw_datasets, acceler
     progress_bar = tqdm(range(len(eval_dataloader)), disable=not accelerator.is_local_main_process)
 
     model.eval()
+    
     for batch in eval_dataloader:
         with torch.no_grad():
             predictions = model(batch, prefixlm=args.prefixlm)
 
         metric.add_batch(
             predictions=accelerator.gather_for_metrics(predictions),
-            references=accelerator.gather_for_metrics(batch["targets"]),
+            references=accelerator.gather_for_metrics(batch["targets"])
         )
 
         progress_bar.update(1)
