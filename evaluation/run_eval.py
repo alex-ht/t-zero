@@ -27,7 +27,6 @@ import json
 
 import datasets
 import torch
-from torch.nn import *
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
