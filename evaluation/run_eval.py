@@ -310,7 +310,7 @@ def run_template(template_name, prompts, model, tokenizer, raw_datasets, acceler
         "accuracy",
         process_id=accelerator.process_index,
         num_process=accelerator.num_processes,
-        experiment_id=f"{args.dataset_name}_{args.dataset_config_name}_{args.template_name}_{str(random.randint(0,999))}".replace('/', '_').replace(' ', '_')
+        experiment_id=f"{args.dataset_name}_{args.dataset_config_name}_{args.template_name}".replace('/', '_').replace(' ', '_')
     )
 
     # Eval!
@@ -448,22 +448,16 @@ def main():
     prompts = DatasetTemplates(
         prompt_dataset_name
     )
-
-    if args.template_name is not None:
-        template_names = [args.template_name]
-    else:
-        template_names = prompts.all_template_names
-
-    for template_name in template_names:
-        run_template(
-            template_name=template_name,
-            prompts=prompts,
-            model=model,
-            tokenizer=tokenizer,
-            raw_datasets=raw_datasets,
-            accelerator=accelerator,
-            args=args
-        )
+    
+    run_template(
+        template_name=args.template_name,
+        prompts=prompts,
+        model=model,
+        tokenizer=tokenizer,
+        raw_datasets=raw_datasets,
+        accelerator=accelerator,
+        args=args
+    )
 
 if __name__ == "__main__":
     main()
